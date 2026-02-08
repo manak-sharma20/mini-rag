@@ -32,6 +32,6 @@ vectorstore = Chroma.from_documents(
     persist_directory=DB_PATH
 )
 
-vectorstore.persist()
+
 
 print("Indexing complete!")
