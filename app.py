@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_ollama import OllamaLLM
+
 
 DB_PATH = "db"
 
@@ -19,24 +19,11 @@ if question:
 
     context = "\n\n".join([doc.page_content for doc in docs])
 
-    llm = OllamaLLM(model="llama3")
+    st.subheader("Retrieved Context (Evidence from Document)")
+    st.write(context)
 
-    prompt = f"""
-You are an AI assistant answering questions using ONLY the provided context.
+    st.info("Note: Full AI answering (LLaMA3) works locally. Cloud demo shows retrieved knowledge chunks only.")
 
-If the answer is not in the context, say "I don't know".
-
-Context:
-{context}
-
-Question:
-{question}
-"""
-
-    response = llm.invoke(prompt)
-
-    st.subheader("Answer")
-    st.write(response)
 
     st.subheader("Sources")
     for doc in docs:
