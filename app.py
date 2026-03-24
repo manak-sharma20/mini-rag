@@ -20,8 +20,6 @@ st.title("📄 Chat with your Documents (Mini RAG)")
 # Sidebar for Document Upload
 with st.sidebar:
     groq_api_key = API_KEY or os.environ.get("GROQ_API_KEY", "")
-    if not groq_api_key:
-        st.warning("Please configure your Groq API key in `app.py` directly to enable full AI answering via LLaMA 3.")
     
     st.header("Upload Documents")
     uploaded_files = st.file_uploader("Upload PDF files", type=["pdf"], accept_multiple_files=True)
@@ -129,8 +127,6 @@ if question:
         
         st.subheader("Retrieved Context (Evidence from Document)")
         st.write(context)
-        
-        st.info("Note: Enter a Groq API key in the sidebar for full AI answering via LLaMA 3. Currently showing retrieved knowledge chunks only.")
         
         st.subheader("Sources")
         for doc in docs:
