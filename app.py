@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import tempfile
+from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -10,18 +11,22 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
+load_dotenv()
+
 DB_PATH = "db"
 
-# Optional: Hardcode your Groq API key here to avoid typing it every time
-API_KEY = ""
+
+groq_api_key = os.environ.get("GROQ_API_KEY", "")
 
 st.title("📄 Chat with your Documents (Mini RAG)")
 
-# Sidebar for Document Upload
+
 with st.sidebar:
-    groq_api_key = API_KEY or os.environ.get("GROQ_API_KEY", "")
-    
     st.header("Upload Documents")
+    if groq_api_key:
+        st.success("✅ Groq API key loaded from .env")
+    else:
+        st.error("❌ GROQ_API_KEY not found in .env — answers will be raw chunks")
     uploaded_files = st.file_uploader("Upload PDF files", type=["pdf"], accept_multiple_files=True)
 
     if st.button("Process Uploaded PDFs") and uploaded_files:
@@ -67,7 +72,7 @@ with st.sidebar:
 question = st.text_input("Ask a question about the PDF")
 
 if question:
-    # Use the real HuggingFace index
+   
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2"
     )
@@ -77,14 +82,14 @@ if question:
         embedding_function=embeddings
     )
 
-    # retrieve relevant chunks
+    
     retriever = db.as_retriever(search_kwargs={"k": 4})
 
     if groq_api_key:
-        # Full RAG LLM pipeline using Groq (LLaMA 3)
+        
         llm = ChatGroq(
             groq_api_key=groq_api_key,
-            model_name="llama3-8b-8192",
+            model_name="llama-3.1-8b-instant",
             temperature=0
         )
         
@@ -121,7 +126,8 @@ if question:
                 st.error(f"Error communicating with Groq API: {e}")
                 
     else:
-        # Fallback if no API key is provided
+       
+        st.warning("⚠️ No Groq API Key provided. Falling back to returning raw document chunks instead of LLaMA-generated answers. Please enter your API key in the sidebar.")
         docs = retriever.invoke(question)
         context = "\n\n".join([doc.page_content for doc in docs])
         
