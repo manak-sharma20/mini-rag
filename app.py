@@ -86,7 +86,7 @@ with st.sidebar:
                 
                 embeddings = HuggingFaceEmbeddings(
                     model_name="all-MiniLM-L6-v2",
-                    model_kwargs={'device': 'cpu'},
+                    model_kwargs={'device': 'cpu', 'low_cpu_mem_usage': False},
                     encode_kwargs={'device': 'cpu'}
                 )
                 
@@ -122,7 +122,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
 
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
-        model_kwargs={'device': 'cpu'},
+        model_kwargs={'device': 'cpu', 'low_cpu_mem_usage': False},
         encode_kwargs={'device': 'cpu'}
     )
 
