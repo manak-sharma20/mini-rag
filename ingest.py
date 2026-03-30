@@ -24,7 +24,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 chunks = text_splitter.split_documents(documents)
 
 embeddings = HuggingFaceEmbeddings(
-    model_name="all-MiniLM-L6-v2"
+    model_name="all-MiniLM-L6-v2",
+    model_kwargs={'device': 'cpu'}
 )
 
 vectorstore = Chroma.from_documents(

@@ -1,26 +1,26 @@
 # Mini RAG Chatbot (Document Question Answering)
 
 This project implements a Retrieval-Augmented Generation (RAG) system that allows users to ask questions about PDF documents.
-The system indexes documents using embeddings and retrieves relevant context to generate grounded answers using a locally hosted LLaMA-3 model via Ollama.
+The system indexes documents using embeddings and retrieves relevant context to generate grounded answers using high-speed inference via **Groq** (LLaMA 3.3/3.1).
 
 ------------------------------------------------------------
 
 ## Features
-- Chat with PDF documents
-- Semantic search (meaning-based, not keyword-based)
-- Local LLM (no paid API required)
-- Page-level citations
-- Reduced hallucinations using grounded context
+- **Multi-Model Support**: Switch between LLaMA 3.3, 3.1, Qwen, and GPT-OSS models.
+- **Chat History**: Full session-based conversation memory with a "Recent Chats" sidebar.
+- **Multi-PDF Upload**: Upload and process multiple documents directly through the UI.
+- **Semantic search**: Meaning-based retrieval using HuggingFace embeddings.
+- **Page-level citations**: Verified sources and page numbers for every answer.
+- **Mac Optimized**: Includes fixes for Torch meta-tensor errors on Apple Silicon.
 
 ------------------------------------------------------------
 
 ## Tech Stack
-- Python
-- LangChain
-- ChromaDB (Vector Database)
-- Sentence Transformers (Embeddings)
-- Ollama + LLaMA3 (Local LLM)
-- Streamlit (User Interface)
+- **Python** & **LangChain**
+- **ChromaDB** (Vector Database)
+- **HuggingFace** (`all-MiniLM-L6-v2` Embeddings)
+- **GroqCloud** (LLaMA 3.3/3.1 Inference)
+- **Streamlit** (UI Framework)
 
 ------------------------------------------------------------
 
@@ -100,10 +100,9 @@ RAG keeps the model unchanged and dynamically retrieves knowledge from documents
 ------------------------------------------------------------
 
 ## Future Improvements
-- Multi-document upload
-- Chat history memory
-- PDF highlighting
-- Cloud deployment
+- PDF highlighting in the viewer
+- Cloud deployment (Streamlit Community Cloud)
+- Long-term chat persistence (Database-backed)
 
 ------------------------------------------------------------
 
