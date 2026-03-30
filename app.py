@@ -1,5 +1,12 @@
 import streamlit as st
 import os
+import torch
+
+# Universal Stability Overrides (Fixes meta-tensor error)
+os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+torch.set_default_device('cpu')
+
 import tempfile
 from dotenv import load_dotenv
 from langchain_community.document_loaders import PyPDFLoader
@@ -10,10 +17,6 @@ from langchain_groq import ChatGroq
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
-
-# Deployment Stability Overrides (Fixes meta-tensor error)
-os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
-os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 load_dotenv()
 
@@ -86,7 +89,7 @@ with st.sidebar:
                 
                 embeddings = HuggingFaceEmbeddings(
                     model_name="all-MiniLM-L6-v2",
-                    model_kwargs={'device': 'cpu', 'low_cpu_mem_usage': False},
+                    model_kwargs={'device': 'cpu'},
                     encode_kwargs={'device': 'cpu'}
                 )
                 
@@ -122,7 +125,7 @@ if prompt := st.chat_input("Ask a question about your documents"):
 
     embeddings = HuggingFaceEmbeddings(
         model_name="all-MiniLM-L6-v2",
-        model_kwargs={'device': 'cpu', 'low_cpu_mem_usage': False},
+        model_kwargs={'device': 'cpu'},
         encode_kwargs={'device': 'cpu'}
     )
 
