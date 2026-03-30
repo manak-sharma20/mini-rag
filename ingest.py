@@ -3,6 +3,10 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 
+# Deployment Stability Overrides (Fixes meta-tensor error)
+os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+
 from langchain_community.vectorstores import Chroma
 
 DATA_PATH = "data"
@@ -25,7 +29,8 @@ chunks = text_splitter.split_documents(documents)
 
 embeddings = HuggingFaceEmbeddings(
     model_name="all-MiniLM-L6-v2",
-    model_kwargs={'device': 'cpu'}
+    model_kwargs={'device': 'cpu'},
+    encode_kwargs={'device': 'cpu'}
 )
 
 vectorstore = Chroma.from_documents(
