@@ -28,7 +28,7 @@ DB_PATH = "db"
 
 groq_api_key = os.environ.get("GROQ_API_KEY", "")
 
-st.title("Chat with your Documents (Mini RAG)")
+st.title("Chat with your Documents")
 
 
 with st.sidebar:
