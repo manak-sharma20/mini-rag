@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cpu
 streamlit==1.32.2
 langchain==0.2.12
 langchain-community==0.2.11
