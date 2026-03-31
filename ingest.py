@@ -4,7 +4,6 @@ import torch
 # Universal Stability Overrides (Fixes meta-tensor error)
 os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-torch.set_default_device('cpu')
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
