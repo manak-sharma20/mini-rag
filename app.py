@@ -1,4 +1,13 @@
 import os
+import sys
+
+# SQLite monkeypatch for ChromaDB compatibility on Streamlit Cloud
+if sys.platform.startswith("linux"):
+    try:
+        import pysqlite3
+        sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+    except ImportError:
+        pass
 
 # Universal Stability Overrides (Fixes meta-tensor error on Mac/MPS and Streamlit Cloud)
 os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
@@ -97,8 +106,8 @@ with st.sidebar:
                 
                 # Add directly to Chroma index
                 db = Chroma.from_documents(
-                    chunks,
-                    embeddings,
+                    documents=chunks,
+                    embedding=embeddings,
                     persist_directory=DB_PATH
                 )
                 st.success(f"Successfully processed {len(uploaded_files)} PDF(s) and added {len(chunks)} chunks to the database.")
