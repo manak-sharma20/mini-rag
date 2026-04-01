@@ -1,6 +1,15 @@
 import os
+import sys
 
-# Universal Stability Overrides (Fixes meta-tensor and protobuf errors on Mac/MPS and Streamlit Cloud)
+# SQLite monkeypatch for ChromaDB compatibility on Streamlit Cloud
+if sys.platform.startswith("linux"):
+    try:
+        import pysqlite3
+        sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
+    except ImportError:
+        pass
+
+# Universal Stability Overrides (Fixes meta-tensor and protobuf errors)
 os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
 os.environ["ACCELERATE_USE_CPU"] = "true"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -8,7 +17,6 @@ os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 os.environ["FORCE_CPU"] = "1"
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
-import sys
 import streamlit as st
 import torch
 import tempfile
