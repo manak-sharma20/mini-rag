@@ -1,9 +1,13 @@
 import os
 import torch
 
-# Universal Stability Overrides (Fixes meta-tensor error)
+# Universal Stability Overrides (Fixes meta-tensor and protobuf errors)
 os.environ["TRANSFORMERS_ACCELERATE_OFF"] = "1"
+os.environ["ACCELERATE_USE_CPU"] = "true"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+os.environ["FORCE_CPU"] = "1"
+os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
