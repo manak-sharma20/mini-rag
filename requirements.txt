@@ -1,5 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.6.0+cpu
+torch>=2.2.0
 streamlit>=1.38.0
 langchain==0.2.12
 langchain-community==0.2.11
@@ -9,4 +8,5 @@ chromadb==0.5.3
 sentence-transformers==2.7.0
 pypdf==4.2.0
 transformers
+accelerate
 python-dotenv>=1.0.0
