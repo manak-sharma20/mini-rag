@@ -26,11 +26,27 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_groq import ChatGroq
-from langchain.chains import create_retrieval_chain
+from langchain.chains import create_retrieval_chain, create_history_aware_retriever
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.messages import AIMessage, HumanMessage
 
 load_dotenv()
+
+@st.cache_resource
+def get_embeddings():
+    return HuggingFaceEmbeddings(
+        model_name="all-MiniLM-L6-v2",
+        model_kwargs={'device': 'cpu'},
+        encode_kwargs={'device': 'cpu'}
+    )
+
+@st.cache_resource
+def get_db():
+    return Chroma(
+        persist_directory=DB_PATH,
+        embedding_function=get_embeddings()
+    )
 
 # Initialize session state for chat history early for sidebar access
 if "messages" not in st.session_state:
@@ -47,7 +63,7 @@ st.title("Chat with your Documents")
 with st.sidebar:
     st.header("Settings")
     if not groq_api_key:
-        st.error("❌ GROQ_API_KEY not found in .env")
+        st.error("GROQ_API_KEY not found in .env")
     
     # Updated Model Selection (March 2026 Active List)
     model_option = st.selectbox(
@@ -99,18 +115,8 @@ with st.sidebar:
                 )
                 chunks = text_splitter.split_documents(documents)
                 
-                embeddings = HuggingFaceEmbeddings(
-                    model_name="all-MiniLM-L6-v2",
-                    model_kwargs={'device': 'cpu'},
-                    encode_kwargs={'device': 'cpu'}
-                )
-                
-                # Add directly to Chroma index
-                db = Chroma.from_documents(
-                    documents=chunks,
-                    embedding=embeddings,
-                    persist_directory=DB_PATH
-                )
+                embeddings = get_embeddings()
+                db = get_db()   
                 st.success(f"Successfully processed {len(uploaded_files)} PDF(s) and added {len(chunks)} chunks to the database.")
             else:
                 st.warning("No text could be extracted from the uploaded PDFs.")
@@ -156,6 +162,32 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 temperature=0
             )
             
+            # Build chat history from Streamlit session
+            chat_history = []
+            for msg in st.session_state.messages[:-1]:  # Exclude the current prompt
+                if msg["role"] == "user":
+                    chat_history.append(HumanMessage(content=msg["content"]))
+                else:
+                    chat_history.append(AIMessage(content=msg["content"]))
+            
+            # 1. Contextualize the question for retriever
+            contextualize_q_system_prompt = (
+                "Given a chat history and the latest user question "
+                "which might reference context in the chat history, "
+                "formulate a standalone question which can be understood "
+                "without the chat history. Do NOT answer the question, "
+                "just reformulate it if needed and otherwise return it as is."
+            )
+            contextualize_q_prompt = ChatPromptTemplate.from_messages([
+                ("system", contextualize_q_system_prompt),
+                MessagesPlaceholder("chat_history"),
+                ("human", "{input}"),
+            ])
+            history_aware_retriever = create_history_aware_retriever(
+                llm, retriever, contextualize_q_prompt
+            )
+            
+            # 2. Answer question
             system_prompt = (
                 "You are an assistant for question-answering tasks. "
                 "Use the following pieces of retrieved context to answer the question. "
@@ -164,17 +196,21 @@ if prompt := st.chat_input("Ask a question about your documents"):
                 "{context}"
             )
             
-            prompt_template = ChatPromptTemplate.from_messages([
+            qa_prompt = ChatPromptTemplate.from_messages([
                 ("system", system_prompt),
+                MessagesPlaceholder("chat_history"),
                 ("human", "{input}"),
             ])
             
-            question_answer_chain = create_stuff_documents_chain(llm, prompt_template)
-            rag_chain = create_retrieval_chain(retriever, question_answer_chain)
+            question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+            rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
             
             with st.spinner("Generating answer..."):
                 try:
-                    response = rag_chain.invoke({"input": prompt})
+                    response = rag_chain.invoke({
+                        "input": prompt,
+                        "chat_history": chat_history
+                    })
                     answer = response["answer"]
                     st.markdown(answer)
                     
